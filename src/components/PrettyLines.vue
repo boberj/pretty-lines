@@ -1,16 +1,5 @@
 <template>
-  <div class="Pretty Lines">
-    <nav class="top-nav">
-      <div class="container">
-        <div class="nav-wrapper">
-          <div class="row">
-            <div class="col s12">
-              <h1 class="header">COVID-19</h1>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
+  <div class="pretty-lines">
     <div class="container main">
       <div class="row">
         <div class="col s12">
