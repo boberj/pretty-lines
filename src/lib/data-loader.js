@@ -8,6 +8,8 @@ const loadData = async () => {
 
   const areas = [].concat(await states, await counties, await world);
 
+  addDailyDifferences(areas);
+
   return Object.freeze(areas);
 };
 
@@ -76,6 +78,21 @@ const loadWorld = async () => {
   });
 
   return casesAndDeaths.map(item => entry(item[0], item[1]));
+};
+
+const addDailyDifferences = areas => {
+  for (let area of areas) {
+    let casesYesterday = 0;
+    let deathsYesterday = 0;
+
+    for (let day of area.values) {
+      day.newCases = day.cases - casesYesterday;
+      day.newDeaths = day.deaths - deathsYesterday;
+
+      casesYesterday = day.cases;
+      deathsYesterday = day.deaths;
+    }
+  }
 };
 
 const partition = keyF => data =>

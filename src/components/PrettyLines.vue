@@ -75,7 +75,7 @@
         <div class="col s2">
           <p>
             <label>
-              <input type="radio" value="daily" v-model="controls.count" disabled="disabled" />
+              <input type="radio" value="daily" v-model="controls.count" />
               <span>Daily</span>
             </label>
           </p>
@@ -158,7 +158,18 @@ export default {
       const margin = { top: 20, right: 30, bottom: 30, left: 70 };
       const flatData = this.flatten(data);
 
-      const valueF = this.controls.dataView == "cases" ? d => d.cases : d => d.deaths;
+      const valueAccessors = {
+        cases: {
+          daily: d => d.newCases,
+          cumulative: d => d.cases
+        },
+        deaths: {
+          daily: d => d.newDeaths,
+          cumulative: d => d.deaths
+        }
+      };
+
+      const valueF = valueAccessors[this.controls.dataView][this.controls.count];
       const validatorF = d => !isNaN(valueF(d)) && (this.controls.logScale ? valueF(d) > 0 : true);
 
       const line = d3
