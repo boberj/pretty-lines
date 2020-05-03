@@ -143,8 +143,9 @@ export default {
     async loadData() {
       const states = await this.loadStates();
       const counties = await this.loadCounties();
+      const world = await this.loadWorld();
 
-      const areas = states.concat(counties);
+      const areas = states.concat(counties, world);
 
       this.suggestions = Object.freeze(
         areas.map((area, index) => ({
@@ -186,6 +187,38 @@ export default {
       };
 
       return this.partition(nameF)(data);
+    },
+    async loadWorld() {
+      const cases = await d3.csv(
+        "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
+      );
+
+      const deaths = await d3.csv(
+        "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
+      );
+
+      const casesAndDeaths = d3.zip(cases, deaths);
+      const dates = cases.columns.slice(4); // Remove region and position columns
+
+      const key = item => {
+        const region1 = item["Country/Region"];
+        const region2 = item["Province/State"];
+        return [region2, region1].filter(i => i.length > 0).join(", ");
+      };
+
+      const values = (cases, deaths) =>
+        dates.map(date => ({
+          date: this.parseUsDate(date),
+          cases: parseInt(cases[date]),
+          deaths: parseInt(deaths[date])
+        }));
+
+      const entry = (cases, deaths) => ({
+        key: key(cases),
+        values: values(cases, deaths)
+      });
+
+      return casesAndDeaths.map(item => entry(item[0], item[1]));
     },
     generateGraph(data) {
       const height = 500;
@@ -266,7 +299,8 @@ export default {
     flatten(data) {
       return data.map(entry => entry.values).flat();
     },
-    parseDate: d3.utcParse("%Y-%m-%d")
+    parseDate: d3.utcParse("%Y-%m-%d"),
+    parseUsDate: d3.utcParse("%m/%d/%y")
   }
 };
 </script>
