@@ -2,6 +2,7 @@
   <div class="footer">
     <div class="center">
       <div class="container">
+        <a href="data-sources.html">Data Sources</a> |
         <a href="https://github.com/boberj/pretty-lines/">GitHub Repository</a>
       </div>
     </div>
