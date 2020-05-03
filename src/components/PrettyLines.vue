@@ -94,7 +94,7 @@
 <script>
 import AutoComplete from "./AutoComplete.vue";
 import * as d3 from "d3";
-import stateAbbreviations from "../state-abbreviations";
+import loadData from "../lib/data-loader.js";
 
 export default {
   name: "PrettyLines",
@@ -129,6 +129,18 @@ export default {
     }
   },
   methods: {
+    async loadData() {
+      const data = await loadData();
+
+      this.suggestions = Object.freeze(
+        data.map((area, index) => ({
+          id: index,
+          value: area.key
+        }))
+      );
+
+      this.data = Object.freeze(data);
+    },
     computeData() {
       return this.selectedAreas.map(selectedArea => this.data[selectedArea.id]);
     },
@@ -139,86 +151,6 @@ export default {
     },
     removeArea(areaId) {
       this.selectedAreas = this.selectedAreas.filter(area => area.id != areaId);
-    },
-    async loadData() {
-      const states = await this.loadStates();
-      const counties = await this.loadCounties();
-      const world = await this.loadWorld();
-
-      const areas = states.concat(counties, world);
-
-      this.suggestions = Object.freeze(
-        areas.map((area, index) => ({
-          id: index,
-          value: area.key
-        }))
-      );
-
-      this.data = Object.freeze(areas);
-    },
-    async loadStates() {
-      const data = await d3.csv(
-        "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv",
-        d => {
-          d.date = this.parseDate(d.date);
-          d.cases = parseInt(d.cases);
-          d.deaths = parseInt(d.deaths);
-          return d;
-        }
-      );
-
-      return this.partition(item => item.state)(data);
-    },
-    async loadCounties() {
-      const data = await d3.csv(
-        "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv",
-        d => {
-          d.date = this.parseDate(d.date);
-          d.cases = parseInt(d.cases);
-          d.deaths = parseInt(d.deaths);
-          return d;
-        }
-      );
-
-      const nameF = item => {
-        const stateAbbreviation = stateAbbreviations[item.state] || item.state;
-
-        return `${item.county}, ${stateAbbreviation}`;
-      };
-
-      return this.partition(nameF)(data);
-    },
-    async loadWorld() {
-      const cases = await d3.csv(
-        "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
-      );
-
-      const deaths = await d3.csv(
-        "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
-      );
-
-      const casesAndDeaths = d3.zip(cases, deaths);
-      const dates = cases.columns.slice(4); // Remove region and position columns
-
-      const key = item => {
-        const region1 = item["Country/Region"];
-        const region2 = item["Province/State"];
-        return [region2, region1].filter(i => i.length > 0).join(", ");
-      };
-
-      const values = (cases, deaths) =>
-        dates.map(date => ({
-          date: this.parseUsDate(date),
-          cases: parseInt(cases[date]),
-          deaths: parseInt(deaths[date])
-        }));
-
-      const entry = (cases, deaths) => ({
-        key: key(cases),
-        values: values(cases, deaths)
-      });
-
-      return casesAndDeaths.map(item => entry(item[0], item[1]));
     },
     generateGraph(data) {
       const height = 500;
@@ -291,16 +223,9 @@ export default {
     strokeColor(i) {
       return d3.schemeTableau10[i % 10];
     },
-    partition: keyF => data =>
-      d3
-        .nest()
-        .key(keyF)
-        .entries(data),
     flatten(data) {
       return data.map(entry => entry.values).flat();
-    },
-    parseDate: d3.utcParse("%Y-%m-%d"),
-    parseUsDate: d3.utcParse("%m/%d/%y")
+    }
   }
 };
 </script>
