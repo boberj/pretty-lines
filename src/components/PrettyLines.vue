@@ -46,6 +46,12 @@
               <span>Log scale</span>
             </label>
           </p>
+          <p>
+            <label>
+              <input type="checkbox" v-model="controls.normalize" />
+              <span title="Per 100,000 inhabitants">Normalize</span>
+            </label>
+          </p>
         </div>
         <div class="col s2">
           <p>
@@ -98,6 +104,7 @@ export default {
       selectedAreas: [],
       controls: {
         logScale: false,
+        normalize: false,
         dataView: "cases",
         count: "cumulative"
       }
@@ -145,9 +152,10 @@ export default {
       const height = 500;
       const width = 800;
       const margin = { top: 20, right: 30, bottom: 30, left: 70 };
+      const yDomainMin = this.controls.logScale ? 1 : 0;
       const flatData = this.flatten(data);
 
-      const valueAccessors = {
+      const valueAccessorFns = {
         cases: {
           daily: d => d.newCases,
           cumulative: d => d.cases
@@ -158,25 +166,34 @@ export default {
         }
       };
 
-      const valueF = valueAccessors[this.controls.dataView][this.controls.count];
-      const validatorF = d => !isNaN(valueF(d)) && (this.controls.logScale ? valueF(d) > 0 : true);
+      const accessorFn = valueAccessorFns[this.controls.dataView][this.controls.count];
+
+      const valueFn = d => {
+        const value = accessorFn(d);
+
+        return this.controls.normalize ? (100000 * value) / d.population : value;
+      };
+
+      const validatorFn = d =>
+        (!this.controls.normalize || d.population != undefined) &&
+        !isNaN(valueFn(d)) &&
+        valueFn(d) > yDomainMin;
 
       const line = d3
         .line()
-        .defined(validatorF)
+        .defined(validatorFn)
         .x(d => x(d.date))
-        .y(d => y(valueF(d)));
+        .y(d => y(valueFn(d)));
 
       const x = d3
         .scaleUtc()
         .domain(d3.extent(flatData, d => d.date))
         .range([margin.left, width - margin.right]);
 
-      const yDomainMin = this.controls.logScale ? 1 : 0;
       const yScale = this.controls.logScale ? d3.scaleLog() : d3.scaleLinear();
 
       const y = yScale
-        .domain([yDomainMin, d3.max(flatData, valueF)])
+        .domain([yDomainMin, d3.max(flatData, valueFn)])
         .nice()
         .range([height - margin.bottom, margin.top]);
 

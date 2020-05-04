@@ -1,14 +1,15 @@
 import * as d3 from "d3";
-import stateAbbreviations from "../../data/state-abbreviations";
 
 const loadData = async () => {
   const states = loadStates();
   const counties = loadCounties();
   const world = loadWorld();
+  const populationData = loadPopulationData();
 
   const areas = [].concat(await states, await counties, await world);
 
   addDailyDifferences(areas);
+  addPopulationData(areas, await populationData);
 
   return Object.freeze(areas);
 };
@@ -24,7 +25,7 @@ const loadStates = async () => {
     }
   );
 
-  return partition(item => item.state)(data);
+  return partition(item => `${item.state}, US`)(data);
 };
 
 const loadCounties = async () => {
@@ -38,13 +39,7 @@ const loadCounties = async () => {
     }
   );
 
-  const nameF = item => {
-    const stateAbbreviation = stateAbbreviations[item.state] || item.state;
-
-    return `${item.county}, ${stateAbbreviation}`;
-  };
-
-  return partition(nameF)(data);
+  return partition(item => `${item.county}, ${item.state}, US`)(data);
 };
 
 const loadWorld = async () => {
@@ -78,6 +73,31 @@ const loadWorld = async () => {
   });
 
   return casesAndDeaths.map(item => entry(item[0], item[1]));
+};
+
+const loadPopulationData = () =>
+  d3.csv(
+    "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/UID_ISO_FIPS_LookUp_Table.csv"
+  );
+
+const addPopulationData = (areas, populationData) => {
+  const areaToPopulation = populationData.reduce((acc, item) => {
+    acc[item["Combined_Key"]] = parseInt(item["Population"]);
+
+    return acc;
+  }, {});
+
+  for (let area of areas) {
+    const population = areaToPopulation[area.key];
+
+    if (population == undefined) {
+      continue;
+    }
+
+    for (let day of area.values) {
+      day.population = population;
+    }
+  }
 };
 
 const addDailyDifferences = areas => {
