@@ -76,6 +76,12 @@
           </p>
           <p>
             <label>
+              <input type="radio" value="movingDaily" v-model="controls.count" />
+              <span>Daily (7 day moving average)</span>
+            </label>
+          </p>
+          <p>
+            <label>
               <input type="radio" value="cumulative" v-model="controls.count" />
               <span>Cumulative</span>
             </label>
@@ -158,10 +164,12 @@ export default {
       const valueAccessorFns = {
         cases: {
           daily: d => d.newCases,
+          movingDaily: d => d.movingNewCases,
           cumulative: d => d.cases
         },
         deaths: {
           daily: d => d.newDeaths,
+          movingDaily: d => d.movingNewDeaths,
           cumulative: d => d.deaths
         }
       };

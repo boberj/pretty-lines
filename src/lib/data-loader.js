@@ -105,12 +105,28 @@ const addDailyDifferences = areas => {
     let casesYesterday = 0;
     let deathsYesterday = 0;
 
-    for (let day of area.values) {
+    let movingSumCases = 0;
+    let movingSumDeaths = 0;
+
+    for (let i = 0, n = area.values.length; i < n; i++) {
+      let day = area.values[i];
+
       day.newCases = day.cases - casesYesterday;
       day.newDeaths = day.deaths - deathsYesterday;
 
       casesYesterday = day.cases;
       deathsYesterday = day.deaths;
+
+      movingSumCases += day.newCases;
+      movingSumDeaths += day.newDeaths;
+
+      day.movingNewCases = movingSumCases / Math.min(i + 1, 7);
+      day.movingNewDeaths = movingSumDeaths / Math.min(i + 1, 7);
+
+      if (i >= 6) {
+        movingSumCases -= area.values[i - 6].newCases;
+        movingSumDeaths -= area.values[i - 6].newDeaths;
+      }
     }
   }
 };
