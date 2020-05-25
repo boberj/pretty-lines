@@ -16,12 +16,12 @@
             <div id="graph"></div>
           </div>
           <div class="column is-narrow">
-            <div class="tags has-addons" v-for="(area, i) in selectedAreas" :key="area.id">
-              <span class="tag" :style="{ backgroundColor: strokeColor(i) }"></span>
+            <div class="tags has-addons" v-for="selection in selectedAreas" :key="selection.id">
+              <span class="tag" :style="{ backgroundColor: strokeColor(selection.id) }"></span>
               <span class="tag">
-                {{ area.value }}
+                {{ selection.area.value }}
               </span>
-              <a class="tag is-delete" @click="removeArea(area.id)"></a>
+              <a class="tag is-delete" @click="removeArea(selection.id)"></a>
             </div>
           </div>
         </div>
@@ -112,6 +112,7 @@ export default {
       suggestions: [],
       suggestionAttribute: "value",
       selectedAreas: [],
+      selectedAreasTotalCounter: 0,
       controls: {
         logScale: false,
         normalize: false,
@@ -148,22 +149,29 @@ export default {
       this.data = Object.freeze(data);
     },
     computeData() {
-      return this.selectedAreas.map(selectedArea => this.data[selectedArea.id]);
+      return this.selectedAreas.map(selection => ({
+        id: selection.id,
+        data: this.data[selection.area.id]
+      }));
     },
     addArea(area) {
-      if (!this.selectedAreas.includes(area)) {
-        this.selectedAreas.push(area);
+      if (this.selectedAreas.findIndex(selection => selection.area.id === area.id) === -1) {
+        this.selectedAreasTotalCounter++;
+        this.selectedAreas.push({
+          id: this.selectedAreasTotalCounter - 1,
+          area: area
+        });
       }
     },
-    removeArea(areaId) {
-      this.selectedAreas = this.selectedAreas.filter(area => area.id != areaId);
+    removeArea(selectionId) {
+      this.selectedAreas = this.selectedAreas.filter(selection => selection.id !== selectionId);
     },
-    generateGraph(data) {
+    generateGraph(selectedAreaData) {
       const height = 500;
       const width = 800;
       const margin = { top: 20, right: 30, bottom: 30, left: 70 };
       const yDomainMin = this.controls.logScale ? 1 : 0;
-      const flatData = this.flatten(data);
+      const flatData = this.flatten(selectedAreaData);
 
       const valueAccessorFns = {
         cases: {
@@ -237,12 +245,12 @@ export default {
 
       svg.append("g").call(yAxis);
 
-      data.forEach((area, i) =>
+      selectedAreaData.forEach(selection =>
         svg
           .append("path")
-          .datum(area.values)
+          .datum(selection.data.values)
           .attr("fill", "none")
-          .attr("stroke", this.strokeColor(i))
+          .attr("stroke", this.strokeColor(selection.id))
           .attr("stroke-width", 1.5)
           .attr("stroke-linejoin", "round")
           .attr("stroke-linecap", "round")
@@ -252,8 +260,8 @@ export default {
     strokeColor(i) {
       return d3.schemeTableau10[i % 10];
     },
-    flatten(data) {
-      return data.map(entry => entry.values).flat();
+    flatten(selectedAreaData) {
+      return selectedAreaData.map(selection => selection.data.values).flat();
     }
   }
 };
