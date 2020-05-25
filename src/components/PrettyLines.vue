@@ -1,91 +1,95 @@
 <template>
   <div class="pretty-lines">
-    <div class="container main">
-      <div class="row">
-        <div class="col s12">
-          <div class="center">
-            <AutoComplete
-              :suggestions="suggestions"
-              :suggestion-attribute="suggestionAttribute"
-              @selected="addArea"
-            />
+    <div class="section">
+      <div class="container has-text-centered">
+        <AutoComplete
+          :suggestions="suggestions"
+          :suggestion-attribute="suggestionAttribute"
+          @selected="addArea"
+        />
+      </div>
+    </div>
+    <div class="section">
+      <div class="container">
+        <div class="columns">
+          <div class="column">
+            <div id="graph"></div>
+          </div>
+          <div class="column is-narrow">
+            <div class="tags has-addons" v-for="(area, i) in selectedAreas" :key="area.id">
+              <span class="tag" :style="{ backgroundColor: strokeColor(i) }"></span>
+              <span class="tag">
+                {{ area.value }}
+              </span>
+              <a class="tag is-delete" @click="removeArea(area.id)"></a>
+            </div>
           </div>
         </div>
       </div>
-      <div class="row">
-        <div class="col s12 center">
-          <ul>
-            <li class="chip" v-for="(area, i) in selectedAreas" :key="area.id">
-              <svg viewBox="0 0 10 10" width="10px" height="10px">
-                <line
-                  x1="0"
-                  y1="6"
-                  x2="10"
-                  y2="6"
-                  :stroke="strokeColor(i)"
-                  stroke-width="1.5"
-                  stroke-linejoin="round"
-                  stroke-linecap="round"
-                />
-              </svg>
-              {{ area.value }}
-              <i class="close material-icons" @click="removeArea(area.id)">close</i>
-            </li>
-          </ul>
+    </div>
+    <div class="section">
+      <div class="columns is-centered">
+        <div class="column is-narrow">
+          <div class="field">
+            <div class="control">
+              <label class="checkbox">
+                <input type="checkbox" v-model="controls.logScale" />
+                Log scale
+              </label>
+            </div>
+          </div>
+          <div class="field">
+            <div class="control">
+              <label class="checkbox" title="Per 100,000 inhabitants">
+                <input type="checkbox" v-model="controls.normalize" />
+                Normalize
+              </label>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="row">
-        <div id="graph" class="col s12 center"></div>
-      </div>
-      <div class="row">
-        <div class="col s3"></div>
-        <div class="col s2">
-          <p>
-            <label>
-              <input type="checkbox" v-model="controls.logScale" />
-              <span>Log scale</span>
-            </label>
-          </p>
-          <p>
-            <label>
-              <input type="checkbox" v-model="controls.normalize" />
-              <span title="Per 100,000 inhabitants">Normalize</span>
-            </label>
-          </p>
+        <div class="column is-narrow">
+          <div class="field">
+            <div class="control">
+              <label class="radio">
+                <input type="radio" value="cases" v-model="controls.dataView" />
+                Cases
+              </label>
+            </div>
+          </div>
+          <div class="field">
+            <div class="control">
+              <label class="radio">
+                <input type="radio" value="deaths" v-model="controls.dataView" />
+                Deaths
+              </label>
+            </div>
+          </div>
         </div>
-        <div class="col s2">
-          <p>
-            <label>
-              <input type="radio" value="cases" v-model="controls.dataView" />
-              <span>Cases</span>
-            </label>
-          </p>
-          <p>
-            <label>
-              <input type="radio" value="deaths" v-model="controls.dataView" />
-              <span>Deaths</span>
-            </label>
-          </p>
-        </div>
-        <div class="col s2">
-          <p>
-            <label>
-              <input type="radio" value="daily" v-model="controls.count" />
-              <span>Daily</span>
-            </label>
-          </p>
-          <p>
-            <label>
-              <input type="radio" value="movingDaily" v-model="controls.count" />
-              <span>Daily (7 day moving average)</span>
-            </label>
-          </p>
-          <p>
-            <label>
-              <input type="radio" value="cumulative" v-model="controls.count" />
-              <span>Cumulative</span>
-            </label>
-          </p>
+        <div class="column is-narrow">
+          <div class="field">
+            <div class="control">
+              <label class="radio">
+                <input type="radio" value="daily" v-model="controls.count" />
+                Daily
+              </label>
+            </div>
+          </div>
+          <div class="field">
+            <div class="control">
+              <label class="radio">
+                <input type="radio" value="movingDaily" v-model="controls.count" />
+                Daily (7 day moving average)
+              </label>
+            </div>
+          </div>
+          <div class="field">
+            <div class="control">
+              <label class="radio">
+                <input type="radio" value="cumulative" v-model="controls.count" />
+                Cumulative
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -258,20 +262,5 @@ export default {
 <style scoped lang="scss">
 .chip {
   font-weight: bold;
-}
-
-.top-nav {
-  height: 110px;
-  box-shadow: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.14);
-  background-color: transparent;
-  margin-bottom: 30px;
-}
-
-.header {
-  margin: 0px;
-  padding-top: 22px;
-  color: rgba(0, 0, 0, 0.14);
-  font-weight: 300;
 }
 </style>

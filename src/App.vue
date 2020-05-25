@@ -21,7 +21,6 @@ export default {
   name: "App",
   components: {
     Footer,
-    Header,
     PrettyLines
   }
 };

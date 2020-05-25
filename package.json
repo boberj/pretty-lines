@@ -8,10 +8,9 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "bulma": "^0.8.2",
     "core-js": "^3.6.4",
     "d3": "^5.15.1",
-    "material-design-icons": "^3.0.1",
-    "materialize-css": "^1.0.0-rc.2",
     "vue": "^2.6.11",
     "vue-instant": "^1.0.4"
   },

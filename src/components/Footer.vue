@@ -1,10 +1,10 @@
 <template>
   <div class="footer">
-    <div class="center">
-      <div class="container">
+    <div class="content has-text-centered">
+      <p>
         <a href="data-sources.html">Data Sources</a> |
         <a href="https://github.com/boberj/pretty-lines/">GitHub Repository</a>
-      </div>
+      </p>
     </div>
   </div>
 </template>
