@@ -6,7 +6,7 @@ const loadData = async () => {
   const world = loadWorld();
   const populationData = loadPopulationData();
 
-  const areas = [].concat(await states, await counties, await world);
+  const areas = [].concat(await states, await counties, await world).sort(compareAreas);
 
   addDailyDifferences(areas);
   addPopulationData(areas, await populationData);
@@ -139,5 +139,18 @@ const partition = keyF => data =>
 
 const parseDate = d3.utcParse("%Y-%m-%d");
 const parseUsDate = d3.utcParse("%m/%d/%y");
+
+const compareAreas = (objA, objB) => {
+  const a = objA.key;
+  const b = objB.key;
+
+  if (a < b) {
+    return -1;
+  } else if (a > b) {
+    return 1;
+  } else {
+    return 0;
+  }
+};
 
 export default loadData;

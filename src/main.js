@@ -1,11 +1,11 @@
 import Vue from "vue";
+import Autocomplete from "buefy";
 import App from "./App.vue";
-import VueInstant from "vue-instant/dist/vue-instant.common";
 
 import "bulma/css/bulma.min.css";
-import "vue-instant/dist/vue-instant.css";
+import "buefy/dist/buefy.css";
 
-Vue.use(VueInstant);
+Vue.use(Autocomplete);
 
 Vue.config.productionTip = false;
 

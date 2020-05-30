@@ -8,11 +8,12 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "buefy": "^0.8.20",
     "bulma": "^0.8.2",
     "core-js": "^3.6.4",
     "d3": "^5.15.1",
-    "vue": "^2.6.11",
-    "vue-instant": "^1.0.4"
+    "ramda": "^0.27.0",
+    "vue": "^2.6.11"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.3.0",

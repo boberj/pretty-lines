@@ -1,12 +1,12 @@
 <template>
   <div class="pretty-lines">
     <div class="section">
-      <div class="container has-text-centered">
-        <AutoComplete
-          :suggestions="suggestions"
-          :suggestion-attribute="suggestionAttribute"
-          @selected="addArea"
-        />
+      <div class="container">
+        <div class="columns">
+          <div class="column is-half is-offset-one-quarter">
+            <Autocomplete :options="autocompleteOptions" @selected="addArea" />
+          </div>
+        </div>
       </div>
     </div>
     <div class="section">
@@ -97,20 +97,19 @@
 </template>
 
 <script>
-import AutoComplete from "./AutoComplete.vue";
+import Autocomplete from "./Autocomplete.vue";
 import * as d3 from "d3";
 import loadData from "../lib/data-loader.js";
 
 export default {
   name: "PrettyLines",
   components: {
-    AutoComplete
+    Autocomplete
   },
   data() {
     return {
       data: [],
-      suggestions: [],
-      suggestionAttribute: "value",
+      autocompleteOptions: [],
       selectedAreas: [],
       selectedAreasTotalCounter: 0,
       controls: {
@@ -139,7 +138,7 @@ export default {
     async loadData() {
       const data = await loadData();
 
-      this.suggestions = Object.freeze(
+      this.autocompleteOptions = Object.freeze(
         data.map((area, index) => ({
           id: index,
           value: area.key
