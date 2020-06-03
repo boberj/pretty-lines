@@ -4,6 +4,7 @@ import App from "./App.vue";
 
 import "bulma/css/bulma.min.css";
 import "buefy/dist/buefy.css";
+import "metrics-graphics/dist/metricsgraphics.css";
 
 Vue.use(Autocomplete);
 

@@ -5,6 +5,22 @@
         <div class="columns">
           <div class="column is-half is-offset-one-quarter">
             <Autocomplete :options="autocompleteOptions" @selected="addArea" />
+            <div class="tags-container">
+              <div class="field is-grouped is-grouped-multiline">
+                <div class="control" v-for="selection in selectedAreas" :key="selection.id">
+                  <div class="tags has-addons">
+                    <span
+                      class="tag"
+                      :style="{ backgroundColor: strokeColor(selection.id) }"
+                    ></span>
+                    <span class="tag">
+                      {{ selection.area.value }}
+                    </span>
+                    <a class="tag is-delete" @click="removeArea(selection.id)"></a>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -13,16 +29,7 @@
       <div class="container">
         <div class="columns">
           <div class="column">
-            <div id="graph"></div>
-          </div>
-          <div class="column is-narrow">
-            <div class="tags has-addons" v-for="selection in selectedAreas" :key="selection.id">
-              <span class="tag" :style="{ backgroundColor: strokeColor(selection.id) }"></span>
-              <span class="tag">
-                {{ selection.area.value }}
-              </span>
-              <a class="tag is-delete" @click="removeArea(selection.id)"></a>
-            </div>
+            <Chart :data="chartData" :controls="controls" />
           </div>
         </div>
       </div>
@@ -98,13 +105,15 @@
 
 <script>
 import Autocomplete from "./Autocomplete.vue";
+import Chart from "./Chart.vue";
 import * as d3 from "d3";
 import loadData from "../lib/data-loader.js";
 
 export default {
   name: "PrettyLines",
   components: {
-    Autocomplete
+    Autocomplete,
+    Chart
   },
   data() {
     return {
@@ -123,15 +132,12 @@ export default {
   async mounted() {
     await this.loadData();
   },
-  watch: {
-    selectedAreas() {
-      this.generateGraph(this.computeData());
-    },
-    controls: {
-      handler() {
-        this.generateGraph(this.computeData());
-      },
-      deep: true
+  computed: {
+    chartData() {
+      return this.selectedAreas.map(selection => ({
+        id: selection.id,
+        data: this.data[selection.area.id]
+      }));
     }
   },
   methods: {
@@ -147,12 +153,6 @@ export default {
 
       this.data = Object.freeze(data);
     },
-    computeData() {
-      return this.selectedAreas.map(selection => ({
-        id: selection.id,
-        data: this.data[selection.area.id]
-      }));
-    },
     addArea(area) {
       if (this.selectedAreas.findIndex(selection => selection.area.id === area.id) === -1) {
         this.selectedAreasTotalCounter++;
@@ -165,109 +165,17 @@ export default {
     removeArea(selectionId) {
       this.selectedAreas = this.selectedAreas.filter(selection => selection.id !== selectionId);
     },
-    generateGraph(selectedAreaData) {
-      const height = 500;
-      const width = 800;
-      const margin = { top: 20, right: 30, bottom: 30, left: 70 };
-      const yDomainMin = this.controls.logScale ? 1 : 0;
-      const flatData = this.flatten(selectedAreaData);
-
-      const valueAccessorFns = {
-        cases: {
-          daily: d => d.newCases,
-          movingDaily: d => d.movingNewCases,
-          cumulative: d => d.cases
-        },
-        deaths: {
-          daily: d => d.newDeaths,
-          movingDaily: d => d.movingNewDeaths,
-          cumulative: d => d.deaths
-        }
-      };
-
-      const accessorFn = valueAccessorFns[this.controls.dataView][this.controls.count];
-
-      const valueFn = d => {
-        const value = accessorFn(d);
-
-        return this.controls.normalize ? (100000 * value) / d.population : value;
-      };
-
-      const validatorFn = d =>
-        (!this.controls.normalize || d.population != undefined) &&
-        !isNaN(valueFn(d)) &&
-        valueFn(d) > yDomainMin;
-
-      const line = d3
-        .line()
-        .defined(validatorFn)
-        .x(d => x(d.date))
-        .y(d => y(valueFn(d)));
-
-      const x = d3
-        .scaleUtc()
-        .domain(d3.extent(flatData, d => d.date))
-        .range([margin.left, width - margin.right]);
-
-      const yScale = this.controls.logScale ? d3.scaleLog() : d3.scaleLinear();
-
-      const y = yScale
-        .domain([yDomainMin, d3.max(flatData, valueFn)])
-        .nice()
-        .range([height - margin.bottom, margin.top]);
-
-      const xAxis = g =>
-        g.attr("transform", `translate(0,${height - margin.bottom})`).call(
-          d3
-            .axisBottom(x)
-            .ticks(width / 80)
-            .tickSizeOuter(0)
-        );
-
-      const yAxis = g =>
-        g
-          .attr("transform", `translate(${margin.left},0)`)
-          .call(d3.axisLeft(y).ticks(10, ",.2r"))
-          .call(g => g.select(".domain").remove());
-
-      d3.select("#graph")
-        .select("svg")
-        .remove();
-
-      const svg = d3
-        .select("#graph")
-        .append("svg")
-        .attr("height", height)
-        .attr("width", width);
-
-      svg.append("g").call(xAxis);
-
-      svg.append("g").call(yAxis);
-
-      selectedAreaData.forEach(selection =>
-        svg
-          .append("path")
-          .datum(selection.data.values)
-          .attr("fill", "none")
-          .attr("stroke", this.strokeColor(selection.id))
-          .attr("stroke-width", 1.5)
-          .attr("stroke-linejoin", "round")
-          .attr("stroke-linecap", "round")
-          .attr("d", line)
-      );
-    },
     strokeColor(i) {
       return d3.schemeTableau10[i % 10];
-    },
-    flatten(selectedAreaData) {
-      return selectedAreaData.map(selection => selection.data.values).flat();
     }
   }
 };
 </script>
 
 <style scoped lang="scss">
-.chip {
-  font-weight: bold;
+.tags-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
 }
 </style>
