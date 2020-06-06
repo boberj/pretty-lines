@@ -16,13 +16,11 @@ export default {
   },
   data() {
     return {
-      width: 800,
-      height: 500
+      width: 800
     };
   },
   mounted() {
     this.width = this.$refs.chart.parentNode.clientWidth;
-    this.height = this.width * 0.4;
   },
   watch: {
     data() {
@@ -74,11 +72,19 @@ export default {
       const labels = this.data.map(item => item.data.key);
       const lineColors = this.data.map(item => d3.schemeTableau10[item.id % 10]);
 
+      const leftPadding = this.width > 400 ? 150 : 50;
+      const rightPadding = this.width > 400 ? 200 : 50;
+      const height = (this.width - rightPadding) * 0.5;
+
       MG.data_graphic({
         data: chartData,
         width: this.width,
-        height: this.height,
-        right: 200,
+        height: height,
+        left: leftPadding,
+        right: rightPadding,
+        top: 30,
+        small_height_threshold: 200,
+        small_width_threshold: 400,
         target: "#chart",
         x_accessor: "date",
         y_accessor: "value",

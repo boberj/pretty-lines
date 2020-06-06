@@ -24,8 +24,6 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="section">
       <div class="container">
         <div class="columns">
           <div class="column">
@@ -33,70 +31,40 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="section">
-      <div class="columns is-centered">
+      <div class="columns is-centered is-vcentered">
         <div class="column is-narrow">
           <div class="field">
-            <div class="control">
-              <label class="checkbox">
-                <input type="checkbox" v-model="controls.logScale" />
-                Log scale
-              </label>
-            </div>
-          </div>
-          <div class="field">
-            <div class="control">
-              <label class="checkbox" title="Per 100,000 inhabitants">
-                <input type="checkbox" v-model="controls.normalize" />
-                Normalize
-              </label>
-            </div>
+            <b-checkbox v-model="controls.logScale">
+              Log scale
+            </b-checkbox>
           </div>
         </div>
         <div class="column is-narrow">
           <div class="field">
-            <div class="control">
-              <label class="radio">
-                <input type="radio" value="cases" v-model="controls.dataView" />
-                Cases
-              </label>
-            </div>
-          </div>
-          <div class="field">
-            <div class="control">
-              <label class="radio">
-                <input type="radio" value="deaths" v-model="controls.dataView" />
-                Deaths
-              </label>
-            </div>
+            <b-checkbox v-model="controls.normalize">
+              Normalize
+            </b-checkbox>
           </div>
         </div>
         <div class="column is-narrow">
-          <div class="field">
-            <div class="control">
-              <label class="radio">
-                <input type="radio" value="daily" v-model="controls.count" />
-                Daily
-              </label>
-            </div>
-          </div>
-          <div class="field">
-            <div class="control">
-              <label class="radio">
-                <input type="radio" value="movingDaily" v-model="controls.count" />
-                Daily (7 day moving average)
-              </label>
-            </div>
-          </div>
-          <div class="field">
-            <div class="control">
-              <label class="radio">
-                <input type="radio" value="cumulative" v-model="controls.count" />
-                Cumulative
-              </label>
-            </div>
-          </div>
+          <b-field>
+            <b-radio-button v-model="controls.dataView" native-value="cases">
+              Cases
+            </b-radio-button>
+            <b-radio-button v-model="controls.dataView" native-value="deaths">
+              Deaths
+            </b-radio-button>
+          </b-field>
+        </div>
+        <div class="column is-narrow">
+          <b-field>
+            <b-radio-button v-model="controls.count" native-value="movingDaily">
+              Daily
+            </b-radio-button>
+            <b-radio-button v-model="controls.count" native-value="cumulative">
+              Cumulative
+            </b-radio-button>
+          </b-field>
         </div>
       </div>
     </div>
