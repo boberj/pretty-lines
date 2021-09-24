@@ -1,6 +1,13 @@
 <template>
   <div class="pretty-lines">
-    <div class="section">
+    <div v-if="loading" class="section">
+      <div class="container">
+        <div class="has-text-centered">
+          Loading data...
+        </div>
+      </div>
+    </div>
+    <div v-else class="section">
       <div class="container">
         <div class="columns">
           <div class="column is-half is-offset-one-quarter">
@@ -85,6 +92,7 @@ export default {
   },
   data() {
     return {
+      loading: true,
       data: [],
       autocompleteOptions: [],
       selectedAreas: [],
@@ -99,6 +107,7 @@ export default {
   },
   async mounted() {
     await this.loadData();
+    this.loading = false;
   },
   computed: {
     chartData() {
